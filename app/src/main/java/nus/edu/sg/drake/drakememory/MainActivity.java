@@ -11,13 +11,19 @@ import java.util.*;
 import android.view.View;
 import android.app.*;
 import android.content.*;
+import android.os.Handler;
+import android.os.SystemClock;
+
+import java.util.ArrayList;
+import android.os.CountDownTimer;
+
 
 
 
 public class MainActivity extends AppCompatActivity {
 
 
-    TextView p1,p2;
+    TextView p1,p2,timerView;
 
     ImageView imageView01_1,imageView01_2,imageView01_3,imageView01_4;
     ImageView imageView02_1,imageView02_2,imageView02_3,imageView02_4;
@@ -45,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         p1 = (TextView) findViewById(R.id.p1);
         p2 = (TextView) findViewById(R.id.p2);
+        timerView = (TextView) findViewById(R.id.timerView);
 
         //first row
         imageView01_1 = (ImageView) findViewById(R.id.imageView01_1);
@@ -87,6 +94,14 @@ public class MainActivity extends AppCompatActivity {
         p1.setTextColor(Color.BLUE);
         //(inactive)
         p2.setTextColor(Color.GRAY);
+
+        CountUpTimer timer = new CountUpTimer(999999999) {
+            public void onTick(int second) {
+                timerView.setText(String.valueOf(second));
+            }
+        };
+
+        timer.start();
 
         //FIRST ROW------------------------------------------------
         imageView01_1.setOnClickListener(new View.OnClickListener(){
@@ -417,13 +432,13 @@ public class MainActivity extends AppCompatActivity {
                 imageView03_2.getVisibility() == View.INVISIBLE &&
                 imageView03_3.getVisibility() == View.INVISIBLE &&
                 imageView03_4.getVisibility() == View.INVISIBLE ) {
-            AlertDialog.Builder alertDiaglogBuilder =new AlertDialog.Builder(MainActivity.this);
-            alertDiaglogBuilder
+            AlertDialog.Builder alertDialogBuilder =new AlertDialog.Builder(MainActivity.this);
+            alertDialogBuilder
                     .setMessage("Game Over!\nP1: "+ p1Points+ "\nP2: "+ p2Points)
                     .setCancelable(false)
                     .setPositiveButton("NEW", new DialogInterface.OnClickListener(){
                         @Override
-                        public void onClick(DialogInterface diaglogInterface, int i){
+                        public void onClick(DialogInterface dialogInterface, int i){
                             Intent intent  = new Intent(getApplicationContext(),MainActivity.class);
                             startActivity(intent);
                             finish();
@@ -431,12 +446,36 @@ public class MainActivity extends AppCompatActivity {
                     })
                     .setNegativeButton("EXIT", new DialogInterface.OnClickListener(){
                         @Override
-                        public void onClick(DialogInterface diaglogInterface, int i){
+                        public void onClick(DialogInterface dialogInterface, int i){
                             finish();
                         }
                     });
-            AlertDialog alertdialog = alertDiaglogBuilder.create();
+            AlertDialog alertdialog = alertDialogBuilder.create();
             alertdialog.show();
         }
     }
+
+    public abstract class CountUpTimer extends CountDownTimer {
+        private static final long INTERVAL_MS = 1000;
+        private final long duration;
+
+        protected CountUpTimer(long durationMs) {
+            super(durationMs, INTERVAL_MS);
+            this.duration = durationMs;
+        }
+
+        public abstract void onTick(int second);
+
+        @Override
+        public void onTick(long msUntilFinished) {
+            int second = (int) ((duration - msUntilFinished) / 1000);
+            onTick(second);
+        }
+
+        @Override
+        public void onFinish() {
+            onTick(duration / 1000);
+        }
+    }
+
 }
